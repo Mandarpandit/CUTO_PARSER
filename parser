@@ -1,0 +1,23 @@
+import pandas as pd
+import time
+import os 
+import os.path 
+import datetime
+import sys
+import glob
+import numpy
+
+dir = "c:/Mandar_python_script/"
+
+df = pd.read_csv(dir + "Eric_4G_Cuto-KPI_Report_20200401.csv" ,header=0)
+
+df['Shortdate'] = df.apply(lambda x: datetime.datetime.strptime(x['Date'], "%d/%m/%y, %H:%M").strftime("%d/%m/%y") , axis=1)
+df['hour'] = df.apply(lambda x: datetime.datetime.strptime(x['Date'], "%d/%m/%y, %H:%M").strftime("%H") , axis=1)
+df['minute'] = df.apply(lambda x: datetime.datetime.strptime(x['Date'], "%d/%m/%y, %H:%M").strftime("%M") , axis=1)
+df['CUTO_OnOff'] = df.apply(lambda x: "CUTO_ON" if ((x['minute'] == "00") | (x['minute'] == "30")) else "CUTO_Off", axis=1)
+
+df.to_csv(dir + "out.csv", index=False)
+
+dfGroup=df.groupby(['Shortdate', 'Cell Name','hour', 'CUTO_OnOff']).agg({'Average number of used DL PRBs': pd.Series.sum, 'Average number of used DL PRBs_Nom' : pd.Series.sum })
+dfGroup.reset_index(inplace=True)
+dfGroup.to_csv(dir + 'cuto_parsed_file.csv')
